@@ -1,23 +1,15 @@
+// set todos collection global so that both client and server can access it
+Todos = new Mongo.Collection("todos");
+
 if (Meteor.isClient) {
-  // counter starts at 0
-  Session.setDefault('counter', 0);
-
-  Template.hello.helpers({
-    counter: function () {
-      return Session.get('counter');
-    }
-  });
-
-  Template.hello.events({
-    'click button': function () {
-      // increment the counter when button is clicked
-      Session.set('counter', Session.get('counter') + 1);
+  // template helper
+  Template.main.helpers({
+    todos: function(){
+      return Todos.find();
     }
   });
 }
 
 if (Meteor.isServer) {
-  Meteor.startup(function () {
-    // code to run on server at startup
-  });
+
 }
