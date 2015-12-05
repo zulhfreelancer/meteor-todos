@@ -14,12 +14,7 @@ if (Meteor.isClient) {
   		var text = event.target.text.value;
   		// --------------------- ^ input `name` attribute
   		
-  		Todos.insert({
-  			text: text,
-  			createdAt: new Date(),
-  			userId: Meteor.userId(),
-  			username: Meteor.user().username
-  		});
+  		Meteor.call("addTodo", text);
 
   		// clear form
   		event.target.text.value = "";
@@ -27,23 +22,43 @@ if (Meteor.isClient) {
   		return false; // prevent form default
   	},
   	"click .toggle-checked": function(){
-  		Todos.update(this._id, {
-  			$set: {checked: !this.checked}
-  			// let say the checkbox in the form is unchecked (false / not done)
-  			// when we click it, we toggle it using `!` to make it true / done 
-  		});
+  		Meteor.call("setChecked", this._id, !this.checked)
   	},
   	"click .delete-todo": function(){
   		if (confirm("Are you sure to delete this todo?")) {
-  			Todos.remove(this._id);
+  			Meteor.call("deleteTodo", this._id)
   		};
   	}
   });
 
   Accounts.ui.config({
-  	passwordSignupFields: "USERNAME_ONLY"
+  	passwordSignupFields: "USERNAME_ONLY" // require username only (remove email)
   })
 }
+
+// production CRUD access
+Meteor.methods({
+	addTodo: function(text){
+		// if user not logged in, show error
+		if (!Meteor.userId()) {
+			throw new Meteor.Error("not-authorize")
+		}
+		Todos.insert({
+  			text: text,
+  			createdAt: new Date(),
+  			userId: Meteor.userId(),
+  			username: Meteor.user().username
+  		});
+	},
+	deleteTodo: function(todoId){
+		Todos.remove(todoId);
+	},
+	setChecked: function(todoId, setChecked){
+		Todos.update(todoId, {
+  			$set: {checked: setChecked}
+  		});
+	}
+});
 
 if (Meteor.isServer) {
 
