@@ -60,6 +60,14 @@ li {
 	border-bottom: #eee solid 1px;
 }
 
+li.checked {
+  color: #ccc;
+}
+
+li.checked .text {
+  text-decoration: line-through;
+}
+
 .delete-todo {
 	float: right;
 	font-weight: bold;
