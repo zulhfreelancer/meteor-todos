@@ -16,7 +16,9 @@ if (Meteor.isClient) {
   		
   		Todos.insert({
   			text: text,
-  			createdAt: new Date()
+  			createdAt: new Date(),
+  			userId: Meteor.userId(),
+  			username: Meteor.user().username
   		});
 
   		// clear form
@@ -37,6 +39,10 @@ if (Meteor.isClient) {
   		};
   	}
   });
+
+  Accounts.ui.config({
+  	passwordSignupFields: "USERNAME_ONLY"
+  })
 }
 
 if (Meteor.isServer) {
