@@ -2,6 +2,8 @@
 Todos = new Mongo.Collection("todos");
 
 if (Meteor.isClient) {
+  Meteor.subscribe("todos");
+
   // template helper
   Template.main.helpers({
     todos: function(){
@@ -36,6 +38,19 @@ if (Meteor.isClient) {
   })
 }
 
+if (Meteor.isServer) {
+	Meteor.publish("todos", function(){
+    if (!this.userId) {
+      // is user not logged in, show all users todos
+      return Todos.find();
+    } else {
+      // if user is logged in, only show that user's todos
+      return Todos.find({userId: this.userId});
+      // ------------------------ ^^^^^^^^^ only show logged in user's todos
+    }
+	});
+}
+
 // production CRUD access
 Meteor.methods({
 	addTodo: function(text){
@@ -51,15 +66,21 @@ Meteor.methods({
   		});
 	},
 	deleteTodo: function(todoId){
+		// prevent todo deletion if a user want to delete another user's todo
+		var todo = Todos.findOne(todoId);
+		if (todo.userId !== Meteor.userId()) {
+			throw new Meteor.Error("not-authorize");
+		}
 		Todos.remove(todoId);
 	},
 	setChecked: function(todoId, setChecked){
+		// prevent todo from being updated if a user want to update another user's todo
+		var todo = Todos.findOne(todoId);
+		if (todo.userId !== Meteor.userId()) {
+			throw new Meteor.Error("not-authorize");
+		}
 		Todos.update(todoId, {
   			$set: {checked: setChecked}
   		});
 	}
 });
-
-if (Meteor.isServer) {
-
-}
